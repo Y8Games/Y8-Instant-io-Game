@@ -5,7 +5,8 @@ This super game making boilerplate combines several top open source tools
  Instant io Game, is a Node.js server with webpack, es6, and classes. Socket.io
  is where the multiplayer communication happens, it's super easy. For the visuals
  Phaser 3, one of the best 2D html5 engines on the market, but it's free. Beautiful,
- powerful, and open source. If you like this, remember to give a link to Y8.com
+ powerful, and open source. If you like this, remember to give a link to
+ <a href="https://y8.com">Y8 Games</a>
 
 ## Install
 - Download and install Node.js and maybe MongoDb. https://nodejs.org/en/download/
