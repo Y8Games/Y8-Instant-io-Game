@@ -5,7 +5,7 @@ This is a boilerplate combining several top open source tools
  Node.js with webpack, ES6, and classes. ExpressJS serves webpages and Socket.io
  handles the communication. Phaser 3, provides a 2D engine for graphics.
 
-![screenshot](https://raw.githubusercontent.com/Y8Games/Y8-Instant-io-Game/master/screenshot.png)
+![screenshot](https://raw.githubusercontent.com/Y8Games/Y8-Instant-io-Game/master/screenshot2.png)
 
 ## Install
 - Download and install Node.js and optionally MongoDb. https://nodejs.org/en/download/
