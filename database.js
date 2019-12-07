@@ -1,8 +1,12 @@
+/*
+* Optional MongoDB database if you need persistant data storage.
+*/
+
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-mongoose.connect('mongodb://localhost/cryptoservalv2')
+mongoose.connect('mongodb://localhost/y8-instant-io', { useNewUrlParser: true })
 .catch(err => {
-  console.error('MongoDb not found, no problem'.red);
+  console.error('MongoDb not found, no problem skipping'.red);
 });
 
 const playerSchema = new Schema({

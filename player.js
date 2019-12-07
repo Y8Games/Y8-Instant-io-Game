@@ -9,10 +9,9 @@ module.exports = class Player {
     this.socket = socket;
   
     this.socket.on('somethingSpecial', (id) => { this.somethingSpecial(id) })
-
   }
 
-  async somethingSpecial(id) {
+  async somethingSpecial(id) { // example of receiving and sending data
     this.socket.emit('somethingElse', 'somedata')
   }
 }

@@ -1,3 +1,7 @@
+/*
+* Connects the client side with socket.io to the server-side and displays the data to the user.
+*/
+
 import 'phaser'
 import Preload from 'preloader'
 

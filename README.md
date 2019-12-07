@@ -1,21 +1,22 @@
 # Y8 Instant io Game
 
-This super game making boilerplate combines several top open source tools
- to give you an easy starting point to making an io multipler game. Inside Y8
- Instant io Game, is a Node.js server with webpack, es6, and classes. Socket.io
- is where the multiplayer communication happens, it's super easy. For the visuals
- Phaser 3, one of the best 2D html5 engines on the market, but it's free. Beautiful,
- powerful, and open source. If you like this, remember to give a link to
- <a href="https://y8.com">Y8 Games</a>
+This is a boilerplate combining several top open source tools
+ to give you an easy starting point to making an io multipler game. It uses
+ Node.js with webpack, ES6, and classes. ExpressJS serves webpages and Socket.io
+ handles the communication. Phaser 3, provides a 2D engine for graphics.
+
+![screenshot](https://raw.githubusercontent.com/Y8Games/Y8-Instant-io-Game/master/screenshot.png)
 
 ## Install
-- Download and install Node.js and maybe MongoDb. https://nodejs.org/en/download/
-- Navigate to the project root where package.json lives and run `npm install` in a terminal
+- Download and install Node.js and optionally MongoDb. https://nodejs.org/en/download/
+- Navigate to the project root where package.json is and run `npm install` in a
+ terminal, command prompt or preferably Git Bash.
 
 ## Development
 - `npm start`
-- Open `http://localhost:8080`
+- Open `http://localhost:8080` in one or more browser tabs
 - Visit https://labs.phaser.io/ for game ideas
+- Client side code (everything in the src folder) is auto loaded. To restart the server, push `Ctrl + C`
 
 ## Production Build
 - Installing, 'npm i webpack -g' and 'npm i webpack-cli -g'
@@ -25,3 +26,6 @@ This super game making boilerplate combines several top open source tools
 - Start server for production `pm2 start server.js`
 - Suggest to make an autostart in pm2
 
+Provided by <a href="https://y8.com">Y8 Games</a>. See other
+ <a href="https://www.y8.com/tags/io_games">io games</a>. Also see the
+ upload page to <a href="https://static.y8.com/upload">submit games</a>.

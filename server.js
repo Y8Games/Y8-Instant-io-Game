@@ -1,5 +1,6 @@
 /*
-* Server holds the boring stuff to get the server going
+* Server holds the boring stuff to get the server going. See world.js more game related
+* server-side code.
 */
 
 const express = require('express');

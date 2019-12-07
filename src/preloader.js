@@ -1,3 +1,7 @@
+/*
+* Preload all assets at the start and show the progress.
+*/
+
 import 'phaser'
 
 export default class Preloader extends Phaser.Scene {
