@@ -6,6 +6,7 @@ import 'phaser';
 import pkg from 'phaser/package.json';
 import Preloader from 'preloader';
 import Game from 'game';
+import * as tf from '@tensorflow/tfjs';
 
 window.width = 1080;
 window.height = 720;
