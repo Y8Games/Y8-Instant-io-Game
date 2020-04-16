@@ -6,6 +6,7 @@ const db = require('./database.js');
 const fs = require('fs');
 const Player = require('./player.js');
 const io = require('socket.io');
+const tf = require('@tensorflow/tfjs-node');
 
 if (process.argv[2] == 'development') {
   

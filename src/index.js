@@ -6,7 +6,6 @@ import 'phaser';
 import pkg from 'phaser/package.json';
 import Preloader from 'preloader';
 import Game from 'game';
-import * as tf from '@tensorflow/tfjs';
 
 window.width = 1080;
 window.height = 720;
@@ -17,6 +16,10 @@ const config = {
   transparent: false,
   parent: 'phaser',
   type: Phaser.AUTO,
+  physics: {
+    default: 'arcade',
+    arcade: { gravity: { y: 100 } }
+  },
   scene: [{ preload, create}, Preloader, Game ],
   autoCenter: 1,
   scaleMode: 3,

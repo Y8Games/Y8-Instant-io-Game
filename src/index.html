@@ -6,11 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="src/style.css">
     <script src="/socket.io/socket.io.js"></script>
-    <title>Y8 Instant io Game</title>
+    <title>Y8 Ai Gym</title>
   </head>
   <body style="overflow: hidden;">
-    <div id="phaser" style="position: absolute; width: 100%; height: 100%; margin: 0; padding: 0; top: 0; left: 0; z-index: 0; background: #000">
+    <div id="phaser" style="position: absolute; width: 100%; height: 100%; margin: 0; padding: 0; top: 0; left: 0; z-index: 0; background: #000;">
     </div>
-    <p>Y8 Instant io</p>
+    <canvas id="machine-canvas" width="224" height="224" style="display: none;"></canvas>
+    <div id="replay" style="display: none;"></div>
   </body>
 </html>

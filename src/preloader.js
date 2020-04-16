@@ -23,6 +23,8 @@ export default class Preloader extends Phaser.Scene {
     this.load.image('ship', 'src/img/ship.png');
     //this.load.atlas('flood', 'src/atlas/blobs.png', 'src/atlas/blobs.json');
     this.load.audio('button', ['src/sound/button.mp3']);
+    this.load.image('ground_1x1', 'src/img/ground_1x1.png');
+    this.load.tilemapTiledJSON('map', 'src/tile-collision-test.json');
 
     this.loadingText = this.add.text(this.centerX, this.centerY, 'Loading... ', { fontFamily: '"Roboto Condensed"' });
     this.load.on('progress', (value) => {
