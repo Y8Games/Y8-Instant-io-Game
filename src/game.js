@@ -52,7 +52,20 @@ export default class Game extends Phaser.Scene {
     this.ship.setInteractive({ useHandCursor: true });
     this.input.setDraggable(this.ship);
 
-    this.input.keyboard.on('keyup-M', function (event) {
+    this.input.keyboard.on('keydown-UP', (event) => {
+     this.ship.y -= 5;
+    });
+    this.input.keyboard.on('keydown-RIGHT', (event) => {
+      this.ship.x += 5;
+    });
+    this.input.keyboard.on('keydown-DOWN', (event) => {
+      this.ship.y += 5;
+    });
+    this.input.keyboard.on('keydown-LEFT',  (event) => {
+      this.ship.x -= 5;
+    });
+
+    this.input.keyboard.on('keyup-M', (event) => {
       var machineCanvas = document.getElementById('machine-canvas');
       var humanCanvas = document.getElementById('phaser');
 
@@ -70,6 +83,11 @@ export default class Game extends Phaser.Scene {
     }, 1000)
   }
 
+  evaluate() {
+    const output = model.predict(tf.tensor2d([[5]], [1, 1]));
+    
+  }
+
   captureReplay() {
     var timer = this.time.addEvent({
       delay: 1000,
@@ -77,7 +95,7 @@ export default class Game extends Phaser.Scene {
         this.captureCanvas()
       },
       callbackScope: this,
-      repeat: 9
+      repeat: 29
     });
   }
 
