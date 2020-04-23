@@ -13,6 +13,8 @@ export default class Game extends Phaser.Scene {
   }
 
   preload() {
+    this.outputCount = 4;
+    this.trainingCount = 15;
     this.width = this.sys.game.canvas.width;
     this.height = this.sys.game.canvas.height;
     this.centerX = this.width / 2;
@@ -22,7 +24,13 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {    
-
+    this.model = tf.layers.simpleRNN({
+      units: this.outputCount,
+      returnSequences: false,
+      activation: 'relu',
+      dropout: 0.025,
+      recurrentDropout: 0.025
+    });
 
     const map = this.make.tilemap({ key: 'map' });
     var groundTiles = map.addTilesetImage('ground_1x1');
@@ -78,14 +86,38 @@ export default class Game extends Phaser.Scene {
       }
     }, this);
 
+    this.input.keyboard.on('keyup-E', (event) => {
+      this.evaluate();
+    });
+
+    this.input.keyboard.on('keyup-T', (event) => {
+      for (var i = 1 ; i < this.trainingCount; i++) {
+        console.log('train step ' + i);
+        this.train(document.getElementById('replay').children[i]);
+      }
+    });
+
     setTimeout(() => {
       this.captureReplay();
     }, 1000)
   }
 
-  evaluate() {
-    const output = model.predict(tf.tensor2d([[5]], [1, 1]));
-    
+  async evaluate() {
+    this.game.renderer.snapshot(async (image) => {
+      var mc = document.getElementById('machine-canvas');
+      var context = mc.getContext('2d');
+      var scale = this.scaleImage(image.width, image.height, 224, 224, false);
+      
+      context.drawImage(
+        image,
+        scale.targetleft,
+        scale.targettop,
+        scale.width,
+        scale.height
+      );
+
+      const output = await this.model.predict(mc.toDataURL());
+    });
   }
 
   captureReplay() {
@@ -95,13 +127,13 @@ export default class Game extends Phaser.Scene {
         this.captureCanvas()
       },
       callbackScope: this,
-      repeat: 29
+      repeat: this.trainingCount - 1
     });
   }
 
   captureCanvas() {
     this.game.renderer.snapshot((image) => {
-      console.log('new img')
+      console.log(' capturing new training image')
       var mc = document.getElementById('machine-canvas');
       var context = mc.getContext('2d');
       var scale = this.scaleImage(image.width, image.height, 224, 224, false);
@@ -122,8 +154,8 @@ export default class Game extends Phaser.Scene {
     });
   }
 
-  train() {
-    var tensor = tf.browser.fromPixels(mc)
+  train(img) {
+    var tensor = tf.browser.fromPixels(img)
     tensor = tf.cast(tensor, "float32");
 
     var offset = tf.scalar(127.5);
@@ -132,11 +164,8 @@ export default class Game extends Phaser.Scene {
 
     // Reshape to a single-element batch so we can pass it to predict.
     //var batched = normalized.reshape([1, 224, 224, 3]);
-
-    this.model = tf.layers.simpleRNN({units: 8, returnSequences: true});
   
-    const output = model.apply(normalized);
-    console.log(JSON.stringify(output));
+    const output = this.model.apply(normalized);
 
   }
 
