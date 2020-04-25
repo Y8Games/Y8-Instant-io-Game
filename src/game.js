@@ -23,13 +23,27 @@ export default class Game extends Phaser.Scene {
     this.name = Math.random().toString(36).substring(7);
   }
 
-  create() {    
-    this.model = tf.layers.simpleRNN({
-      units: this.outputCount,
-      returnSequences: false,
-      activation: 'relu',
-      dropout: 0.025,
-      recurrentDropout: 0.025
+  create() {
+    this.model = tf.sequential();
+    this.model.add(tf.layers.conv2d({
+        inputShape: [224, 224 , 3],
+        kernelSize: 5,
+        filters: 8,
+        strides: 1,
+        activation: 'relu',
+        kernelInitializer: 'VarianceScaling'
+    }));
+    //this.model.add(tf.layers.simpleRNN({
+    //  units: this.outputCount,
+    //  returnSequences: true,
+    //}));
+    this.model.add(tf.layers.timeDistributed(
+      {layer: tf.layers.dense({units: this.outputCount})}));
+    this.model.add(tf.layers.activation({activation: 'softmax'}));
+    this.model.compile({
+      loss: 'categoricalCrossentropy',
+      optimizer: 'sgd',
+      metrics: ['accuracy']
     });
 
     const map = this.make.tilemap({ key: 'map' });
@@ -46,7 +60,7 @@ export default class Game extends Phaser.Scene {
 
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
-    this.ship = this.physics.add.sprite(this.centerX, this.centerY - 180, 'ship')
+    this.ship = this.physics.add.sprite(this.centerX, this.centerY - 160, 'ship')
     this.ship.setBounce(0.1);
     this.ship.scale = 0.5 
 
@@ -116,7 +130,24 @@ export default class Game extends Phaser.Scene {
         scale.height
       );
 
-      const output = await this.model.predict(mc.toDataURL());
+      var newImg = new Image;
+      newImg.onload = async () => {
+        var tensor = tf.browser.fromPixels(newImg)
+        tensor = tf.cast(tensor, "float32");
+
+        var offset = tf.scalar(127.5);
+        // Normalize the image from [0, 255] to [-1, 1].
+        var normalized = tensor.sub(offset).div(offset);
+
+        // Reshape to a single-element batch
+        var batched = tensor.reshape([1, 224, 224, 3]);
+
+        console.log(await this.model.predict(batched));
+
+        this.output = this.model.apply(batched);
+        this.output.print();
+      }
+      newImg.src = mc.toDataURL();
     });
   }
 
@@ -162,10 +193,14 @@ export default class Game extends Phaser.Scene {
     // Normalize the image from [0, 255] to [-1, 1].
     var normalized = tensor.sub(offset).div(offset);
 
-    // Reshape to a single-element batch so we can pass it to predict.
-    //var batched = normalized.reshape([1, 224, 224, 3]);
+    // Reshape to a single-element batch
+    var batched = tensor.reshape([1, 224, 224, 3]);
+
+    var smaller = batched.squeeze([0]);
+
+    console.log(smaller)
   
-    const output = this.model.apply(normalized);
+    this.output = this.model.apply(batched);
 
   }
 
