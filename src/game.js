@@ -26,12 +26,13 @@ export default class Game extends Phaser.Scene {
   create() {
     this.model = tf.sequential();
     this.model.add(tf.layers.conv2d({
-        inputShape: [224, 224 , 3],
-        kernelSize: 5,
-        filters: 8,
-        strides: 1,
-        activation: 'relu',
-        kernelInitializer: 'VarianceScaling'
+      inputShape: [224, 224 , 3],
+      kernelSize: 5,
+      filters: 8,
+      strides: 1,
+      activation: 'relu',
+      kernelInitializer: 'VarianceScaling',
+      returnSequences: true,
     }));
     //this.model.add(tf.layers.simpleRNN({
     //  units: this.outputCount,
@@ -48,7 +49,7 @@ export default class Game extends Phaser.Scene {
 
     const map = this.make.tilemap({ key: 'map' });
     var groundTiles = map.addTilesetImage('ground_1x1');
-    //var coinTiles = map.addTilesetImage('gem');
+    var coinTiles = map.createFromObjects('gem');
     map.createDynamicLayer('Background Layer', groundTiles, 0, 0);
     var groundLayer = map.createDynamicLayer('Ground Layer', groundTiles, 0, 0);
     //var coinLayer = map.createDynamicLayer('Coin Layer', coinTiles, 0, 0);
@@ -142,8 +143,6 @@ export default class Game extends Phaser.Scene {
         // Reshape to a single-element batch
         var batched = tensor.reshape([1, 224, 224, 3]);
 
-        console.log(await this.model.predict(batched));
-
         this.output = this.model.apply(batched);
         this.output.print();
       }
@@ -202,6 +201,20 @@ export default class Game extends Phaser.Scene {
   
     this.output = this.model.apply(batched);
 
+     
+
+  }
+
+  async train2(iterations, batchSize, numTestExamples) {
+    this.trainXs // train data
+    this.trainYs // test data
+    for (let i = 0; i < iterations; ++i) {
+      const history = await this.model.fit(this.trainXs, this.trainYs, {
+        epochs: 1,
+        batchSize,
+        validationData: [this.testXs, this.testYs],
+        yieldEvery: 'epoch'
+      });
   }
 
   scaleImage(srcwidth, srcheight, targetwidth, targetheight, fLetterBox) {
