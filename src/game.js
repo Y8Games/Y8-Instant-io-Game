@@ -29,19 +29,29 @@ export default class Game extends Phaser.Scene {
 
   create() {
     this.model = tf.sequential();
+    this.model.add(tf.layers.input({
+      shape: [224, 224 , 3],
+      name: 'encoderInputs',
+    });
     this.model.add(tf.layers.conv2d({
-      inputShape: [224, 224 , 3],
-      kernelSize: 5,
-      filters: 8,
-      strides: 1,
+      inputShape: [16, 16],
+      kernelSize: 3,
       activation: 'relu',
-      kernelInitializer: 'VarianceScaling',
-      returnSequences: true,
     }));
-    //this.model.add(tf.layers.simpleRNN({
-    //  units: this.outputCount,
-    //  returnSequences: true,
-    //}));
+    this.model.add(
+      tf.layers.maxPooling2d({poolSize: 3})
+    );
+    this.model.add(tf.layers.conv2d({
+      inputShape: [16, 16],
+      kernelSize: 3,
+      activation: 'relu',
+    }));
+    this.model.add(
+      tf.layers.maxPooling2d({poolSize: 3})
+    );
+
+    tf.layers.globalAveragePooling2d
+    
     this.model.add(tf.layers.timeDistributed(
       {layer: tf.layers.dense({units: this.outputCount})}));
     this.model.add(tf.layers.activation({activation: 'softmax'}));
