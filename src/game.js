@@ -27,16 +27,13 @@ export default class Game extends Phaser.Scene {
     this.name = Math.random().toString(36).substring(7);
   }
 
-  create() {
+  createModel() {
     this.model = tf.sequential();
-    this.model.add(tf.layers.input({
-      shape: [224, 224 , 3],
-      name: 'encoderInputs',
-    });
     this.model.add(tf.layers.conv2d({
-      inputShape: [16, 16],
+      inputShape: [224, 224 , 3],
       kernelSize: 3,
       activation: 'relu',
+      filters: 8
     }));
     this.model.add(
       tf.layers.maxPooling2d({poolSize: 3})
@@ -45,12 +42,13 @@ export default class Game extends Phaser.Scene {
       inputShape: [16, 16],
       kernelSize: 3,
       activation: 'relu',
+      filters: 8
     }));
     this.model.add(
       tf.layers.maxPooling2d({poolSize: 3})
     );
 
-    tf.layers.globalAveragePooling2d
+    this.model.add(tf.layers.globalAveragePooling2d());
     
     this.model.add(tf.layers.timeDistributed(
       {layer: tf.layers.dense({units: this.outputCount})}));
@@ -60,6 +58,10 @@ export default class Game extends Phaser.Scene {
       optimizer: 'sgd',
       metrics: ['accuracy']
     });
+  }
+
+  create() {
+    this.createModel();
 
     const map = this.make.tilemap({ key: 'map' });
     var groundTiles = map.addTilesetImage('ground_1x1');
