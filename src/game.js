@@ -13,8 +13,12 @@ export default class Game extends Phaser.Scene {
   }
 
   preload() {
+    this.coinsCollected = 0;
     this.outputCount = 4;
-    this.trainingCount = 15;
+    this.trainingCount = 30;
+    this.iterations = 20;
+    this.batchSize = 5;
+    this.numTestExamples = 10;
     this.width = this.sys.game.canvas.width;
     this.height = this.sys.game.canvas.height;
     this.centerX = this.width / 2;
@@ -49,15 +53,24 @@ export default class Game extends Phaser.Scene {
 
     const map = this.make.tilemap({ key: 'map' });
     var groundTiles = map.addTilesetImage('ground_1x1');
-    var coinTiles = map.createFromObjects('gem');
+    var coinTiles = map.addTilesetImage('coin');
     map.createDynamicLayer('Background Layer', groundTiles, 0, 0);
-    var groundLayer = map.createDynamicLayer('Ground Layer', groundTiles, 0, 0);
-    //var coinLayer = map.createDynamicLayer('Coin Layer', coinTiles, 0, 0);
+    this.groundLayer = map.createDynamicLayer('Ground Layer', groundTiles, 0, 0);
+    this.coinLayer = map.createDynamicLayer('Coin Layer', coinTiles, 0, 0);
 
-    groundLayer.setCollisionBetween(1, 25);
+    this.groundLayer.setCollisionBetween(1, 25);
+
+    var hitCoin = (sprite, tile) => {
+      this.coinLayer.removeTileAt(tile.x, tile.y);
+      this.coinsCollected += 1;
+
+      // Return true to exit processing collision of this tile vs the sprite - in this case, it
+      // doesn't matter since the coin tiles are not set to collide.
+      return false;
+   }
 
     // This will set Tile ID 26 (the coin tile) to call the function "hitCoin" when collided with
-    //coinLayer.setTileIndexCallback(26, hitCoin, this);
+    this.coinLayer.setTileIndexCallback(26, hitCoin, this);
 
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
@@ -65,8 +78,8 @@ export default class Game extends Phaser.Scene {
     this.ship.setBounce(0.1);
     this.ship.scale = 0.5 
 
-    this.physics.add.collider(this.ship, groundLayer);
-    //this.physics.add.overlap(this.ship, coinLayer);
+    this.physics.add.collider(this.ship, this.groundLayer);
+    this.physics.add.overlap(this.ship, this.coinLayer);
     this.cameras.main.startFollow(this.ship);
 
     var debugGraphics = this.add.graphics();
@@ -106,10 +119,7 @@ export default class Game extends Phaser.Scene {
     });
 
     this.input.keyboard.on('keyup-T', (event) => {
-      for (var i = 1 ; i < this.trainingCount; i++) {
-        console.log('train step ' + i);
-        this.train(document.getElementById('replay').children[i]);
-      }
+      this.train2(this.iterations, this.batchSize, this.numTestExamples) 
     });
 
     setTimeout(() => {
@@ -152,7 +162,7 @@ export default class Game extends Phaser.Scene {
 
   captureReplay() {
     var timer = this.time.addEvent({
-      delay: 1000,
+      delay: 500,
       callback: () => {
         this.captureCanvas()
       },
@@ -163,7 +173,7 @@ export default class Game extends Phaser.Scene {
 
   captureCanvas() {
     this.game.renderer.snapshot((image) => {
-      console.log(' capturing new training image')
+      console.log(' capturing training data, use arrows keys to move');
       var mc = document.getElementById('machine-canvas');
       var context = mc.getContext('2d');
       var scale = this.scaleImage(image.width, image.height, 224, 224, false);
@@ -194,27 +204,37 @@ export default class Game extends Phaser.Scene {
 
     // Reshape to a single-element batch
     var batched = tensor.reshape([1, 224, 224, 3]);
-
-    var smaller = batched.squeeze([0]);
-
-    console.log(smaller)
   
     this.output = this.model.apply(batched);
-
-     
-
   }
 
   async train2(iterations, batchSize, numTestExamples) {
-    this.trainXs // train data
-    this.trainYs // test data
+    var replay = document.getElementById('replay');
+
+    var tensor = tf.browser.fromPixels(replay.children[0])
+    tensor = tf.cast(tensor, "float32");
+    var trainXs = tensor.reshape([1, 224, 224, 3]);
+
+    var tensor2 = tf.browser.fromPixels(replay.children[1])
+    tensor2 = tf.cast(tensor, "float32");
+    var trainYs = tensor2.reshape([1, 224, 224, 3]);
+
+    var tensor = tf.browser.fromPixels(replay.children[2])
+    tensor = tf.cast(tensor, "float32");
+    var testXs = tensor.reshape([1, 224, 224, 3]);
+
+    var tensor2 = tf.browser.fromPixels(replay.children[3])
+    tensor2 = tf.cast(tensor, "float32");
+    var testYs = tensor2.reshape([1, 224, 224, 3]);
+
     for (let i = 0; i < iterations; ++i) {
-      const history = await this.model.fit(this.trainXs, this.trainYs, {
+      const history = await this.model.fit(trainXs, trainYs, {
         epochs: 1,
         batchSize,
-        validationData: [this.testXs, this.testYs],
+        validationData: [testXs, testYs],
         yieldEvery: 'epoch'
       });
+    }
   }
 
   scaleImage(srcwidth, srcheight, targetwidth, targetheight, fLetterBox) {

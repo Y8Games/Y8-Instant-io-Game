@@ -20,6 +20,7 @@ export default class Preloader extends Phaser.Scene {
     // Loading
     this.load.image('playBtn', 'src/img/play.png');
     this.load.image('gem', 'src/img/gem.png');
+    this.load.spritesheet('coin', 'src/img/coin.png', { frameWidth: 32, frameHeight: 32 });
     this.load.image('ship', 'src/img/ship.png');
     //this.load.atlas('flood', 'src/atlas/blobs.png', 'src/atlas/blobs.json');
     this.load.audio('button', ['src/sound/button.mp3']);
