@@ -48,16 +48,18 @@ export default class Game extends Phaser.Scene {
       tf.layers.maxPooling2d({poolSize: 3})
     );
 
-    this.model.add(tf.layers.globalAveragePooling2d());
+    this.model.add(tf.layers.globalAveragePooling2d({}));
     
-    this.model.add(tf.layers.timeDistributed(
-      {layer: tf.layers.dense({units: this.outputCount})}));
+    //this.model.add(tf.layers.timeDistributed(
+    //  {layer: tf.layers.dense({units: this.outputCount})}));
     this.model.add(tf.layers.activation({activation: 'softmax'}));
     this.model.compile({
       loss: 'categoricalCrossentropy',
       optimizer: 'sgd',
       metrics: ['accuracy']
     });
+
+    this.model.summary();
   }
 
   create() {
@@ -132,7 +134,7 @@ export default class Game extends Phaser.Scene {
 
     this.input.keyboard.on('keyup-T', (event) => {
       this.train2(this.iterations, this.batchSize, this.numTestExamples) 
-    });
+    }, this);
 
     setTimeout(() => {
       this.captureReplay();
@@ -155,21 +157,23 @@ export default class Game extends Phaser.Scene {
 
       var newImg = new Image;
       newImg.onload = async () => {
-        var tensor = tf.browser.fromPixels(newImg)
-        tensor = tf.cast(tensor, "float32");
-
-        var offset = tf.scalar(127.5);
-        // Normalize the image from [0, 255] to [-1, 1].
-        var normalized = tensor.sub(offset).div(offset);
-
-        // Reshape to a single-element batch
-        var batched = tensor.reshape([1, 224, 224, 3]);
-
-        this.output = this.model.apply(batched);
+        this.output = this.model.apply(this.shapeImage(newImg));
         this.output.print();
       }
       newImg.src = mc.toDataURL();
     });
+  }
+
+  shapeImage(element) {
+    var tensor = tf.browser.fromPixels(element)
+    tensor = tf.cast(tensor, "float32");
+
+    var offset = tf.scalar(127.5);
+    // Normalize the image from [0, 255] to [-1, 1].
+    var normalized = tensor.sub(offset).div(offset);
+
+    // Reshape to a single-element batch
+    return normalized.reshape([1, 224, 224, 3]);
   }
 
   captureReplay() {
@@ -223,21 +227,10 @@ export default class Game extends Phaser.Scene {
   async train2(iterations, batchSize, numTestExamples) {
     var replay = document.getElementById('replay');
 
-    var tensor = tf.browser.fromPixels(replay.children[0])
-    tensor = tf.cast(tensor, "float32");
-    var trainXs = tensor.reshape([1, 224, 224, 3]);
-
-    var tensor2 = tf.browser.fromPixels(replay.children[1])
-    tensor2 = tf.cast(tensor, "float32");
-    var trainYs = tensor2.reshape([1, 224, 224, 3]);
-
-    var tensor = tf.browser.fromPixels(replay.children[2])
-    tensor = tf.cast(tensor, "float32");
-    var testXs = tensor.reshape([1, 224, 224, 3]);
-
-    var tensor2 = tf.browser.fromPixels(replay.children[3])
-    tensor2 = tf.cast(tensor, "float32");
-    var testYs = tensor2.reshape([1, 224, 224, 3]);
+    var trainXs = this.shapeImage(replay.children[0])
+    var trainYs = this.shapeImage(replay.children[1])
+    var testXs = this.shapeImage(replay.children[2])
+    var testYs = this.shapeImage(replay.children[3])
 
     for (let i = 0; i < iterations; ++i) {
       const history = await this.model.fit(trainXs, trainYs, {
