@@ -52,7 +52,7 @@ export default class Game extends Phaser.Scene {
     
     //this.model.add(tf.layers.timeDistributed(
     //  {layer: tf.layers.dense({units: this.outputCount})}));
-    this.model.add(tf.layers.activation({activation: 'softmax'}));
+    this.model.add(tf.layers.dense({units: this.outputCount, activation: 'softmax'}));
     this.model.compile({
       loss: 'categoricalCrossentropy',
       optimizer: 'sgd',
