@@ -25,6 +25,7 @@ export default class Game extends Phaser.Scene {
     this.centerY = this.height / 2;
     this.buttonSound = this.sound.add('bottom', {});
     this.name = Math.random().toString(36).substring(7);
+    this.direction = { up: false, right: false, down: false, left: false };
   }
 
   createModel() {
@@ -49,9 +50,7 @@ export default class Game extends Phaser.Scene {
     );
 
     this.model.add(tf.layers.globalAveragePooling2d({}));
-    
-    //this.model.add(tf.layers.timeDistributed(
-    //  {layer: tf.layers.dense({units: this.outputCount})}));
+
     this.model.add(tf.layers.dense({units: this.outputCount, activation: 'softmax'}));
     this.model.compile({
       loss: 'categoricalCrossentropy',
@@ -104,15 +103,31 @@ export default class Game extends Phaser.Scene {
 
     this.input.keyboard.on('keydown-UP', (event) => {
      this.ship.y -= 5;
+     this.direction.up = true;
     });
     this.input.keyboard.on('keydown-RIGHT', (event) => {
       this.ship.x += 5;
+      this.direction.right = true;
     });
     this.input.keyboard.on('keydown-DOWN', (event) => {
       this.ship.y += 5;
+      this.direction.down = true;
     });
     this.input.keyboard.on('keydown-LEFT',  (event) => {
       this.ship.x -= 5;
+      this.direction.left = true;
+    });
+    this.input.keyboard.on('keyup-UP', (event) => {
+     this.direction.up = false;
+    });
+    this.input.keyboard.on('keyup-RIGHT', (event) => {
+      this.direction.right = false;
+    });
+    this.input.keyboard.on('keyup-DOWN', (event) => {
+      this.direction.down = false;
+    });
+    this.input.keyboard.on('keyup-LEFT',  (event) => {
+      this.direction.left = false;
     });
 
     this.input.keyboard.on('keyup-M', (event) => {
@@ -203,6 +218,7 @@ export default class Game extends Phaser.Scene {
       );
 
       var newImg = new Image;
+      newImg.dataset.direction = this.shortDirection();
       newImg.onload = () => {
         document.getElementById('replay').appendChild(newImg);
       }
@@ -210,36 +226,34 @@ export default class Game extends Phaser.Scene {
     });
   }
 
-  train(img) {
-    var tensor = tf.browser.fromPixels(img)
-    tensor = tf.cast(tensor, "float32");
-
-    var offset = tf.scalar(127.5);
-    // Normalize the image from [0, 255] to [-1, 1].
-    var normalized = tensor.sub(offset).div(offset);
-
-    // Reshape to a single-element batch
-    var batched = tensor.reshape([1, 224, 224, 3]);
-  
-    this.output = this.model.apply(batched);
+  shortDirection() {
+    var dir = '';
+    if (this.direction.up) { dir += 'u'; }
+    if (this.direction.right) { dir += 'r'; }
+    if (this.direction.down) { dir += 'd'; }
+    if (this.direction.left) { dir += 'l'; }
+    return dir;
   }
 
   async train2(iterations, batchSize, numTestExamples) {
     var replay = document.getElementById('replay');
 
-    var trainXs = this.shapeImage(replay.children[0])
-    var trainYs = this.shapeImage(replay.children[1])
-    var testXs = this.shapeImage(replay.children[2])
-    var testYs = this.shapeImage(replay.children[3])
+    //for (let i = 0; i < iterations; ++i) {
 
-    for (let i = 0; i < iterations; ++i) {
+      var trainXs = [this.shapeImage(replay.children[0])]
+      var trainYs = [this.shapeImage(replay.children[0].dataset.direction)]
+      var testXs = [this.shapeImage(replay.children[1])]
+      var testYs = [this.shapeImage(replay.children[1].dataset.direction)]
+
+    
       const history = await this.model.fit(trainXs, trainYs, {
         epochs: 1,
         batchSize,
         validationData: [testXs, testYs],
         yieldEvery: 'epoch'
       });
-    }
+      console.log(history)
+    //}
   }
 
   scaleImage(srcwidth, srcheight, targetwidth, targetheight, fLetterBox) {
