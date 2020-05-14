@@ -148,7 +148,7 @@ export default class Game extends Phaser.Scene {
     });
 
     this.input.keyboard.on('keyup-T', (event) => {
-      this.train2(this.iterations, this.batchSize, this.numTestExamples) 
+      this.train(this.iterations, this.batchSize, this.numTestExamples) 
     }, this);
 
     setTimeout(() => {
@@ -235,21 +235,21 @@ export default class Game extends Phaser.Scene {
     return dir;
   }
 
-  async train2(iterations, batchSize, numTestExamples) {
+  async train(iterations, batchSize, numTestExamples) {
     var replay = document.getElementById('replay');
 
     //for (let i = 0; i < iterations; ++i) {
 
-      var trainXs = [this.shapeImage(replay.children[0])]
-      var trainYs = [this.shapeImage(replay.children[0].dataset.direction)]
-      var testXs = [this.shapeImage(replay.children[1])]
-      var testYs = [this.shapeImage(replay.children[1].dataset.direction)]
+      var trainXs = tf.tensor2d([[this.shapeImage(replay.children[0])]])
+      var trainYs = tf.tensor2d([[replay.children[0].dataset.direction]])
+      var testXs = tf.tensor2d([[this.shapeImage(replay.children[1])]])
+      var testYs = tf.tensor2d([[replay.children[1].dataset.direction]])
 
     
       const history = await this.model.fit(trainXs, trainYs, {
         epochs: 1,
         batchSize,
-        validationData: [testXs, testYs],
+        validationData: testXs, testYs,
         yieldEvery: 'epoch'
       });
       console.log(history)
