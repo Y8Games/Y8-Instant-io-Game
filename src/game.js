@@ -227,29 +227,30 @@ export default class Game extends Phaser.Scene {
   }
 
   shortDirection() {
-    var dir = '';
-    if (this.direction.up) { dir += 'u'; }
-    if (this.direction.right) { dir += 'r'; }
-    if (this.direction.down) { dir += 'd'; }
-    if (this.direction.left) { dir += 'l'; }
-    return dir;
+    var dir = [[0, 0, 0, 0]];
+    if (this.direction.up) { dir[0][0] = 1; }
+    if (this.direction.right) { dir[0][1] = 1; }
+    if (this.direction.down) { dir[0][2] = 1; }
+    if (this.direction.left) { dir[0][3] = 1; }
+    return JSON.stringify(dir);
   }
 
   async train(iterations, batchSize, numTestExamples) {
     var replay = document.getElementById('replay');
 
     //for (let i = 0; i < iterations; ++i) {
+      var input = this.shapeImage(replay.children[0]);
+      var label = JSON.parse(replay.children[0].dataset.direction);
+      var labelTensor = tf.tensor2d(label)
 
-      var trainXs = tf.tensor2d([[this.shapeImage(replay.children[0])]])
-      var trainYs = tf.tensor2d([[replay.children[0].dataset.direction]])
-      var testXs = tf.tensor2d([[this.shapeImage(replay.children[1])]])
-      var testYs = tf.tensor2d([[replay.children[1].dataset.direction]])
+      //var testXs = tf.tensor2d([[this.shapeImage(replay.children[1])]])
+      //var testYs = tf.tensor2d([[replay.children[1].dataset.direction]])
 
     
-      const history = await this.model.fit(trainXs, trainYs, {
+      const history = await this.model.fit(input, labelTensor, {
         epochs: 1,
         batchSize,
-        validationData: testXs, testYs,
+        //validationData: testXs, testYs,
         yieldEvery: 'epoch'
       });
       console.log(history)
