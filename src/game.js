@@ -15,8 +15,7 @@ export default class Game extends Phaser.Scene {
   preload() {
     this.coinsCollected = 0;
     this.outputCount = 4;
-    this.trainingCount = 30;
-    this.iterations = 20;
+    this.trainingCount = 50;
     this.batchSize = 5;
     this.numTestExamples = 10;
     this.width = this.sys.game.canvas.width;
@@ -148,7 +147,7 @@ export default class Game extends Phaser.Scene {
     });
 
     this.input.keyboard.on('keyup-T', (event) => {
-      this.train(this.iterations, this.batchSize, this.numTestExamples) 
+      this.train(this.trainingCount, this.batchSize, this.numTestExamples) 
     }, this);
 
     setTimeout(() => {
@@ -193,12 +192,12 @@ export default class Game extends Phaser.Scene {
 
   captureReplay() {
     var timer = this.time.addEvent({
-      delay: 500,
+      delay: 250,
       callback: () => {
         this.captureCanvas()
       },
       callbackScope: this,
-      repeat: this.trainingCount - 1
+      repeat: this.trainingCount
     });
   }
 
@@ -238,23 +237,23 @@ export default class Game extends Phaser.Scene {
   async train(iterations, batchSize, numTestExamples) {
     var replay = document.getElementById('replay');
 
-    //for (let i = 0; i < iterations; ++i) {
-      var input = this.shapeImage(replay.children[0]);
-      var label = JSON.parse(replay.children[0].dataset.direction);
+    for (let i = 0; i < iterations; ++i) {
+      var input = this.shapeImage(replay.children[i]);
+      var label = JSON.parse(replay.children[i].dataset.direction);
       var labelTensor = tf.tensor2d(label)
 
       //var testXs = tf.tensor2d([[this.shapeImage(replay.children[1])]])
       //var testYs = tf.tensor2d([[replay.children[1].dataset.direction]])
 
     
-      const history = await this.model.fit(input, labelTensor, {
+      const result = await this.model.fit(input, labelTensor, {
         epochs: 1,
         batchSize,
         //validationData: testXs, testYs,
         yieldEvery: 'epoch'
       });
-      console.log(history)
-    //}
+      console.log(result.history.loss[0], result.history.acc[0]);
+    }
   }
 
   scaleImage(srcwidth, srcheight, targetwidth, targetheight, fLetterBox) {
