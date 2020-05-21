@@ -15,7 +15,7 @@ export default class Game extends Phaser.Scene {
   preload() {
     this.coinsCollected = 0;
     this.outputCount = 4;
-    this.trainingCount = 50;
+    this.trainingCount = 70;
     this.batchSize = 1;
     this.numTestExamples = 10;
     this.width = this.sys.game.canvas.width;
