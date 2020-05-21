@@ -48,6 +48,8 @@ export default class Game extends Phaser.Scene {
       tf.layers.maxPooling2d({poolSize: 3})
     );
 
+    this.model.add(tf.layers.dropout({rate: 0.05}));
+
     this.model.add(tf.layers.globalAveragePooling2d({}));
 
     this.model.add(tf.layers.dense({units: this.outputCount, activation: 'softmax'}));
@@ -151,7 +153,7 @@ export default class Game extends Phaser.Scene {
     }, this);
 
     setTimeout(() => {
-      this.captureReplay();
+      //this.captureReplay();
     }, 1000)
   }
 
@@ -173,6 +175,7 @@ export default class Game extends Phaser.Scene {
       newImg.onload = async () => {
         this.output = this.model.apply(this.shapeImage(newImg));
         this.output.print();
+        //this.model.predict(this.shapeImage(newImg)).print();
       }
       newImg.src = mc.toDataURL();
     });
