@@ -16,7 +16,7 @@ export default class Game extends Phaser.Scene {
     this.coinsCollected = 0;
     this.outputCount = 4;
     this.trainingCount = 140;
-    this.batchSize = 2;
+    this.batchSize = 5;
     this.numTestExamples = 10;
     this.width = this.sys.game.canvas.width;
     this.height = this.sys.game.canvas.height;
@@ -31,27 +31,27 @@ export default class Game extends Phaser.Scene {
     this.model = tf.sequential();
     this.model.add(tf.layers.conv2d({
       inputShape: [224, 224 , 3],
+      kernelSize: 3,
+      activation: 'relu',
+      filters: 2
+    }));
+    this.model.add(
+      tf.layers.maxPooling2d({poolSize: 3})
+    );
+    this.model.add(tf.layers.conv2d({
+      inputShape: [28, 28],
       kernelSize: 5,
       activation: 'relu',
-      filters: 8
+      filters: 6
     }));
     this.model.add(
       tf.layers.maxPooling2d({poolSize: 3})
     );
     this.model.add(tf.layers.conv2d({
-      inputShape: [32, 32],
+      inputShape: [7, 7],
       kernelSize: 3,
       activation: 'relu',
       filters: 8
-    }));
-    this.model.add(
-      tf.layers.maxPooling2d({poolSize: 3})
-    );
-    this.model.add(tf.layers.conv2d({
-      inputShape: [16, 16],
-      kernelSize: 3,
-      activation: 'relu',
-      filters: 4
     }));
     this.model.add(
       tf.layers.maxPooling2d({poolSize: 3})
@@ -61,9 +61,9 @@ export default class Game extends Phaser.Scene {
 
     this.model.add(tf.layers.globalAveragePooling2d({}));
 
-    this.model.add(tf.layers.dense({units: this.outputCount, activation: 'softmax'}));
+    this.model.add(tf.layers.dense({units: this.outputCount, activation: 'sigmoid'}));
     this.model.compile({
-      loss: 'categoricalCrossentropy',
+      loss: 'meanSquaredError',
       optimizer: 'sgd',
       metrics: ['accuracy']
     });
@@ -187,9 +187,9 @@ export default class Game extends Phaser.Scene {
 
       var newImg = new Image;
       newImg.onload = async () => {
-        this.output = this.model.apply(this.shapeImage(newImg));
-        this.output.print();
-        //this.model.predict(this.shapeImage(newImg)).print();
+        //this.output = this.model.apply(this.shapeImage(newImg));
+        //this.output.print();
+        this.model.predict(this.shapeImage(newImg)).print();
       }
       newImg.src = mc.toDataURL();
     });
@@ -264,12 +264,12 @@ export default class Game extends Phaser.Scene {
 
     
       const result = await this.model.fit(input, labelTensor, {
-        epochs: 1,
+        epochs: 5,
         batchSize,
         //validationData: testXs, testYs,
         yieldEvery: 'epoch'
       });
-      console.log(result.history.loss[0], result.history.acc[0]);
+      console.log(i, result.history.loss[0], result.history.acc[0]);
     }
   }
 
