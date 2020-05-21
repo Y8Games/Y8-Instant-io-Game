@@ -7,7 +7,7 @@ import pkg from 'phaser/package.json';
 import Preloader from 'preloader';
 import Game from 'game';
 
-window.width = 1080;
+window.width = 720;
 window.height = 720;
 
 const config = {

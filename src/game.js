@@ -15,8 +15,8 @@ export default class Game extends Phaser.Scene {
   preload() {
     this.coinsCollected = 0;
     this.outputCount = 4;
-    this.trainingCount = 70;
-    this.batchSize = 1;
+    this.trainingCount = 140;
+    this.batchSize = 2;
     this.numTestExamples = 10;
     this.width = this.sys.game.canvas.width;
     this.height = this.sys.game.canvas.height;
@@ -31,6 +31,15 @@ export default class Game extends Phaser.Scene {
     this.model = tf.sequential();
     this.model.add(tf.layers.conv2d({
       inputShape: [224, 224 , 3],
+      kernelSize: 5,
+      activation: 'relu',
+      filters: 8
+    }));
+    this.model.add(
+      tf.layers.maxPooling2d({poolSize: 3})
+    );
+    this.model.add(tf.layers.conv2d({
+      inputShape: [32, 32],
       kernelSize: 3,
       activation: 'relu',
       filters: 8
@@ -42,7 +51,7 @@ export default class Game extends Phaser.Scene {
       inputShape: [16, 16],
       kernelSize: 3,
       activation: 'relu',
-      filters: 8
+      filters: 4
     }));
     this.model.add(
       tf.layers.maxPooling2d({poolSize: 3})
@@ -149,11 +158,16 @@ export default class Game extends Phaser.Scene {
     });
 
     this.input.keyboard.on('keyup-T', (event) => {
-      this.train(this.trainingCount, this.batchSize, this.numTestExamples) 
+      this.train(this.trainingCount, this.batchSize, this.numTestExamples);
+    }, this);
+
+    this.input.keyboard.on('keyup-C', (event) => {
+      this.captureReplay();
     }, this);
 
     setTimeout(() => {
-      //this.captureReplay();
+      // Preload replay data
+      document.getElementById('replay').innerHTML = this.cache.text.get('replay');
     }, 1000)
   }
 

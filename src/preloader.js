@@ -26,6 +26,7 @@ export default class Preloader extends Phaser.Scene {
     this.load.audio('button', ['src/sound/button.mp3']);
     this.load.image('ground_1x1', 'src/img/ground_1x1.png');
     this.load.tilemapTiledJSON('map', 'src/tile-collision-test.json');
+    this.load.text('replay', 'replay');
 
     this.loadingText = this.add.text(this.centerX, this.centerY, 'Loading... ', { fontFamily: '"Roboto Condensed"' });
     this.load.on('progress', (value) => {

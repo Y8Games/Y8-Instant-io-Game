@@ -85,4 +85,8 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + '/dist/index.html');
 });
 
+app.get('/replay', function (req, res) {
+  res.sendFile(__dirname + '/src/replay.html');
+});
+
 app.use('/', express.static('dist'));
