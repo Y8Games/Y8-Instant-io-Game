@@ -15,7 +15,7 @@ export default class Game extends Phaser.Scene {
   preload() {
     this.coinsCollected = 0;
     this.outputCount = 4;
-    this.trainingCount = 72;
+    this.trainingCount = 12;
     this.batchSize = 2;
     this.numTestExamples = 10;
     this.width = this.sys.game.canvas.width;
@@ -39,17 +39,17 @@ export default class Game extends Phaser.Scene {
       tf.layers.maxPooling2d({poolSize: 3})
     );
     this.model.add(tf.layers.conv2d({
-      kernelSize: 6,
+      kernelSize: 5,
       activation: 'relu',
-      filters: 6
+      filters: 5
     }));
     this.model.add(
       tf.layers.maxPooling2d({poolSize: 3})
     );
     this.model.add(tf.layers.conv2d({
-      kernelSize: 3,
+      kernelSize: 4,
       activation: 'relu',
-      filters: 8
+      filters: 4
     }));
     this.model.add(
       tf.layers.maxPooling2d({poolSize: 3})
@@ -59,11 +59,16 @@ export default class Game extends Phaser.Scene {
 
     this.model.add(tf.layers.globalAveragePooling2d({}));
 
+    
+
     this.model.add(tf.layers.dense({units: this.outputCount, activation: 'sigmoid'}));
+    //this.model.add(tf.layers.timeDistributed({layer: tf.layers.dense({units: this.outputCount, activation: 'sigmoid'})}));
+
+    
     this.model.compile({
-      loss: 'meanSquaredError',
+      loss: 'categoricalCrossentropy',
       optimizer: 'sgd',
-      metrics: ['accuracy']
+      //metrics: ['accuracy']
     });
 
     this.model.summary();
@@ -254,23 +259,25 @@ export default class Game extends Phaser.Scene {
 
   async train(iterations, batchSize, numTestExamples) {
     var replay = document.getElementById('replay');
+    var start = Phaser.Math.Between(0, 14) * 10;
 
     for (let i = 0; i < iterations; ++i) {
-      var input = this.shapeImage(replay.children[i]);
-      var label = JSON.parse(replay.children[i].dataset.direction);
+      var input = this.shapeImage(replay.children[start + i]);
+      var label = JSON.parse(replay.children[start + i].dataset.direction);
       var labelTensor = tf.tensor2d(label)
 
-      var testXs = this.shapeImage(replay.children[i + 100]);
-      var testYs = tf.tensor2d(JSON.parse(replay.children[i + 100].dataset.direction));
+      //var testXs = this.shapeImage(replay.children[start + i + 12]);
+      //var testYs = tf.tensor2d(JSON.parse(replay.children[ start + i + 12].dataset.direction));
 
     
       const result = await this.model.fit(input, labelTensor, {
         epochs: 12,
         batchSize,
-        validationData: testXs, testYs,
+        //validationData: [testXs, testYs],
         yieldEvery: 'epoch'
       });
-      console.log(i, result.history.loss[0], result.history.acc[0], result);
+      console.log(i, result.history.loss[0]);
+      if (result.history.acc) { console.log(result.history.acc[0]); }
     }
   }
 
