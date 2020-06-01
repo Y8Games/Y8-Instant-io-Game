@@ -5,6 +5,7 @@
 import 'phaser'
 import Preload from 'preloader'
 import * as tf from '@tensorflow/tfjs';
+import * as TSP from 'tensorspace';
 
 export default class Game extends Phaser.Scene {
 
@@ -15,8 +16,9 @@ export default class Game extends Phaser.Scene {
   preload() {
     this.coinsCollected = 0;
     this.outputCount = 4;
-    this.trainingCount = 12;
-    this.batchSize = 2;
+    this.trainingCount = 450;
+    this.captureCount = 150;
+    this.batchSize = 1;
     this.numTestExamples = 10;
     this.width = this.sys.game.canvas.width;
     this.height = this.sys.game.canvas.height;
@@ -41,7 +43,7 @@ export default class Game extends Phaser.Scene {
     this.model.add(tf.layers.conv2d({
       kernelSize: 5,
       activation: 'relu',
-      filters: 5
+      filters: 10
     }));
     this.model.add(
       tf.layers.maxPooling2d({poolSize: 3})
@@ -59,8 +61,6 @@ export default class Game extends Phaser.Scene {
 
     this.model.add(tf.layers.globalAveragePooling2d({}));
 
-    
-
     this.model.add(tf.layers.dense({units: this.outputCount, activation: 'sigmoid'}));
     //this.model.add(tf.layers.timeDistributed({layer: tf.layers.dense({units: this.outputCount, activation: 'sigmoid'})}));
 
@@ -74,8 +74,27 @@ export default class Game extends Phaser.Scene {
     this.model.summary();
   }
 
+  createTensorSpaceModel() {
+    let container = document.getElementById( "container" );
+    let model = new TSP.models.Sequential( container );
+    model.add( new TSP.layers.Conv2d() );
+    model.add( new TSP.layers.Pooling2d() );
+    model.add( new TSP.layers.Conv2d() );
+    model.add( new TSP.layers.Pooling2d() );
+    model.add( new TSP.layers.Conv2d() );
+    model.add( new TSP.layers.Pooling2d() );
+    model.add( new TSP.layers.Dense() );
+    model.add( new TSP.layers.Output1d({
+      outputs: ["0", "1", "2", "3"]
+    }) );
+    model.init(function(){
+      
+    });
+  }
+
   create() {
     this.createModel();
+    //this.createTensorSpaceModel();
 
     const map = this.make.tilemap({ key: 'map' });
     var groundTiles = map.addTilesetImage('ground_1x1');
@@ -171,6 +190,7 @@ export default class Game extends Phaser.Scene {
     setTimeout(() => {
       // Preload replay data
       document.getElementById('replay').innerHTML = this.cache.text.get('replay');
+      console.log('found ' + document.getElementById('replay').children.length + ' training images')
     }, 1000)
   }
 
@@ -217,7 +237,7 @@ export default class Game extends Phaser.Scene {
         this.captureCanvas()
       },
       callbackScope: this,
-      repeat: this.trainingCount
+      repeat: this.captureCount
     });
   }
 
@@ -259,7 +279,7 @@ export default class Game extends Phaser.Scene {
 
   async train(iterations, batchSize, numTestExamples) {
     var replay = document.getElementById('replay');
-    var start = Phaser.Math.Between(0, 14) * 10;
+    var start = 0;
 
     for (let i = 0; i < iterations; ++i) {
       var input = this.shapeImage(replay.children[start + i]);
@@ -271,7 +291,7 @@ export default class Game extends Phaser.Scene {
 
     
       const result = await this.model.fit(input, labelTensor, {
-        epochs: 12,
+        epochs: 1,
         batchSize,
         //validationData: [testXs, testYs],
         yieldEvery: 'epoch'
