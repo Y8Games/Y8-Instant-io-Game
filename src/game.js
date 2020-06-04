@@ -20,6 +20,7 @@ export default class Game extends Phaser.Scene {
     this.captureCount = 150;
     this.batchSize = 1;
     this.numTestExamples = 10;
+    this.explorationRate = 0.5;
     this.width = this.sys.game.canvas.width;
     this.height = this.sys.game.canvas.height;
     this.centerX = this.width / 2;
@@ -175,6 +176,10 @@ export default class Game extends Phaser.Scene {
       }
     }, this);
 
+    this.input.keyboard.on('keyup-A', (event) => {
+      this.autoPilot();
+    });
+
     this.input.keyboard.on('keyup-E', (event) => {
       this.evaluate();
     });
@@ -194,27 +199,49 @@ export default class Game extends Phaser.Scene {
     }, 1000)
   }
 
-  async evaluate() {
-    this.game.renderer.snapshot(async (image) => {
-      var mc = document.getElementById('machine-canvas');
-      var context = mc.getContext('2d');
-      var scale = this.scaleImage(image.width, image.height, 224, 224, false);
-      
-      context.drawImage(
-        image,
-        scale.targetleft,
-        scale.targettop,
-        scale.width,
-        scale.height
-      );
+  async autoPilot() {
+    var exploreAdapt = Phaser.Math.Between(0, 1);
+    if (exploreAdapt > this.explorationRate) {
+      var prediction = await this.evaluate();
+      let direction = prediction.indexOf(Math.max(...prediction));
+      if (direction === 0) { this.ship.y -= 5; }
+      if (direction === 1) { this.ship.x += 5; }
+      if (direction === 2) { this.ship.y += 5; }
+      if (direction === 3) { this.ship.x -= 5; }
+    } else {
+      var randomDirection = Phaser.Math.Between(0, 3);
+      if (randomDirection === 0) { this.ship.y -= 5; }
+      if (randomDirection === 1) { this.ship.x += 5; }
+      if (randomDirection === 2) { this.ship.y += 5; }
+      if (randomDirection === 3) { this.ship.x -= 5; }
+    }
+  }
 
-      var newImg = new Image;
-      newImg.onload = async () => {
-        //this.output = this.model.apply(this.shapeImage(newImg));
-        //this.output.print();
-        this.model.predict(this.shapeImage(newImg)).print();
-      }
-      newImg.src = mc.toDataURL();
+  async evaluate() {
+    return new Promise(resolve => {
+      this.game.renderer.snapshot(async (image) => {
+        var mc = document.getElementById('machine-canvas');
+        var context = mc.getContext('2d');
+        var scale = this.scaleImage(image.width, image.height, 224, 224, false);
+        
+        context.drawImage(
+          image,
+          scale.targetleft,
+          scale.targettop,
+          scale.width,
+          scale.height
+        );
+
+        var newImg = new Image;
+        newImg.onload = async () => {
+          //this.output = this.model.apply(this.shapeImage(newImg));
+          //this.output.print();
+          var prediction = await this.model.predict(this.shapeImage(newImg));
+          prediction.print();
+          return resolve(prediction.dataSync());
+        }
+        newImg.src = mc.toDataURL();
+      });
     });
   }
 
