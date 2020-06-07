@@ -3,7 +3,6 @@
 */
 
 import 'phaser'
-import Preload from 'preloader'
 import * as tf from '@tensorflow/tfjs';
 import * as TSP from 'tensorspace';
 
@@ -177,7 +176,14 @@ export default class Game extends Phaser.Scene {
     }, this);
 
     this.input.keyboard.on('keyup-A', (event) => {
-      this.autoPilot();
+      var timer = this.time.addEvent({
+        delay: 150,
+        callback: () => {
+          this.autoPilot();
+        },
+        callbackScope: this,
+        repeat: 100
+      });
     });
 
     this.input.keyboard.on('keyup-E', (event) => {
