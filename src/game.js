@@ -226,33 +226,26 @@ export default class Game extends Phaser.Scene {
   async evaluate() {
     return new Promise(resolve => {
       this.game.renderer.snapshot(async (image) => {
-        var mc = document.getElementById('machine-canvas');
-        var context = mc.getContext('2d');
-        var scale = this.scaleImage(image.width, image.height, 224, 224, false);
-        
-        context.drawImage(
-          image,
-          scale.targetleft,
-          scale.targettop,
-          scale.width,
-          scale.height
-        );
+        var prediction = await this.model.predict(this.shapeImage(image));
+        prediction.print();
 
-        var newImg = new Image;
-        newImg.onload = async () => {
-          //this.output = this.model.apply(this.shapeImage(newImg));
-          //this.output.print();
-          var prediction = await this.model.predict(this.shapeImage(newImg));
-          prediction.print();
-          return resolve(prediction.dataSync());
-        }
-        newImg.src = mc.toDataURL();
+        /*
+        var input = this.shapeImage(newImg);
+        const result = await this.model.fit(input, prediction, {
+          epochs: 1,
+          batchSize: this.batchSize,
+          yieldEvery: 'epoch'
+        });
+        */
+
+        return resolve(prediction.dataSync());
       });
     });
   }
 
   shapeImage(element) {
-    var tensor = tf.browser.fromPixels(element)
+    var shape = [224, 224];
+    var tensor = tf.browser.fromPixels(element).resizeNearestNeighbor(shape);
     tensor = tf.cast(tensor, "float32");
 
     var offset = tf.scalar(127.5);
@@ -332,43 +325,5 @@ export default class Game extends Phaser.Scene {
       console.log(i, result.history.loss[0]);
       if (result.history.acc) { console.log(result.history.acc[0]); }
     }
-  }
-
-  scaleImage(srcwidth, srcheight, targetwidth, targetheight, fLetterBox) {
-    var result = { width: 0, height: 0, fScaleToTargetWidth: true };
-
-    if ((srcwidth <= 0) || (srcheight <= 0) || (targetwidth <= 0) || (targetheight <= 0)) {
-      return result;
-    }
-
-    // scale to the target width
-    var scaleX1 = targetwidth;
-    var scaleY1 = (srcheight * targetwidth) / srcwidth;
-
-    // scale to the target height
-    var scaleX2 = (srcwidth * targetheight) / srcheight;
-    var scaleY2 = targetheight;
-
-    // now figure out which one we should use
-    var fScaleOnWidth = (scaleX2 > targetwidth);
-    if (fScaleOnWidth) {
-      fScaleOnWidth = fLetterBox;
-    } else {
-      fScaleOnWidth = !fLetterBox;
-    }
-
-    if (fScaleOnWidth) {
-      result.width = Math.floor(scaleX1);
-      result.height = Math.floor(scaleY1);
-      result.fScaleToTargetWidth = true;
-    } else {
-      result.width = Math.floor(scaleX2);
-      result.height = Math.floor(scaleY2);
-      result.fScaleToTargetWidth = false;
-    }
-    result.targetleft = Math.floor((targetwidth - result.width) / 2);
-    result.targettop = Math.floor((targetheight - result.height) / 2);
-
-    return result;
   }
 }
