@@ -15,7 +15,8 @@ export default class Game extends Phaser.Scene {
   preload() {
     this.coinsCollected = 0;
     this.outputCount = 4;
-    this.trainingCount = 450;
+    this.learningRate = 0.005;
+    this.trainingCount = 300;
     this.captureCount = 150;
     this.batchSize = 1;
     this.numTestExamples = 10;
@@ -66,8 +67,8 @@ export default class Game extends Phaser.Scene {
 
     
     this.model.compile({
-      loss: 'categoricalCrossentropy',
-      optimizer: 'sgd',
+      optimizer: tf.train.sgd(this.learningRate),
+      loss: 'meanSquaredError',
       //metrics: ['accuracy']
     });
 
@@ -209,7 +210,7 @@ export default class Game extends Phaser.Scene {
     var exploreAdapt = Phaser.Math.Between(0, 1);
     if (exploreAdapt > this.explorationRate) {
       var prediction = await this.evaluate();
-      let direction = prediction.indexOf(Math.max(...prediction));
+      let direction = prediction.tanh().indexOf(Math.max(...prediction));
       if (direction === 0) { this.ship.y -= 5; }
       if (direction === 1) { this.ship.x += 5; }
       if (direction === 2) { this.ship.y += 5; }
@@ -227,7 +228,8 @@ export default class Game extends Phaser.Scene {
     return new Promise(resolve => {
       this.game.renderer.snapshot(async (image) => {
         var prediction = await this.model.predict(this.shapeImage(image));
-        prediction.print();
+        //prediction.print();
+        prediction.tanh().print();
 
         /*
         var input = this.shapeImage(newImg);
@@ -238,7 +240,7 @@ export default class Game extends Phaser.Scene {
         });
         */
 
-        return resolve(prediction.dataSync());
+        return resolve(prediction.tanh().dataSync());
       });
     });
   }
@@ -273,24 +275,8 @@ export default class Game extends Phaser.Scene {
         return;
       }
       console.log(' capturing training data, use arrows keys to move');
-      var mc = document.getElementById('machine-canvas');
-      var context = mc.getContext('2d');
-      var scale = this.scaleImage(image.width, image.height, 224, 224, false);
-      
-      context.drawImage(
-        image,
-        scale.targetleft,
-        scale.targettop,
-        scale.width,
-        scale.height
-      );
-
-      var newImg = new Image;
-      newImg.dataset.direction = this.shortDirection();
-      newImg.onload = () => {
-        document.getElementById('replay').appendChild(newImg);
-      }
-      newImg.src = mc.toDataURL();
+      // TODO: need to scale this before saving
+      document.getElementById('replay').appendChild(image);
     });
   }
 
@@ -314,7 +300,6 @@ export default class Game extends Phaser.Scene {
 
       //var testXs = this.shapeImage(replay.children[start + i + 12]);
       //var testYs = tf.tensor2d(JSON.parse(replay.children[ start + i + 12].dataset.direction));
-
     
       const result = await this.model.fit(input, labelTensor, {
         epochs: 1,
