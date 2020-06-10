@@ -210,7 +210,7 @@ export default class Game extends Phaser.Scene {
     var exploreAdapt = Phaser.Math.Between(0, 1);
     if (exploreAdapt > this.explorationRate) {
       var prediction = await this.evaluate();
-      let direction = prediction.tanh().indexOf(Math.max(...prediction));
+      let direction = prediction.indexOf(Math.max(...prediction));
       if (direction === 0) { this.ship.y -= 5; }
       if (direction === 1) { this.ship.x += 5; }
       if (direction === 2) { this.ship.y += 5; }
