@@ -15,8 +15,8 @@ export default class Game extends Phaser.Scene {
   preload() {
     this.coinsCollected = 0;
     this.outputCount = 4;
-    this.learningRate = 0.005;
-    this.trainingCount = 300;
+    this.learningRate = 0.01;
+    this.trainingCount = 180;
     this.captureCount = 150;
     this.batchSize = 1;
     this.numTestExamples = 10;
@@ -210,7 +210,7 @@ export default class Game extends Phaser.Scene {
     var exploreAdapt = Phaser.Math.Between(0, 1);
     if (exploreAdapt > this.explorationRate) {
       var prediction = await this.evaluate();
-      let direction = prediction.tanh().indexOf(Math.max(...prediction));
+      let direction = prediction.indexOf(Math.max(...prediction));
       if (direction === 0) { this.ship.y -= 5; }
       if (direction === 1) { this.ship.x += 5; }
       if (direction === 2) { this.ship.y += 5; }
@@ -231,14 +231,13 @@ export default class Game extends Phaser.Scene {
         //prediction.print();
         prediction.tanh().print();
 
-        /*
-        var input = this.shapeImage(newImg);
+        var input = this.shapeImage(image);
+      
         const result = await this.model.fit(input, prediction, {
           epochs: 1,
           batchSize: this.batchSize,
           yieldEvery: 'epoch'
         });
-        */
 
         return resolve(prediction.tanh().dataSync());
       });
