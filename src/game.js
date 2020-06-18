@@ -164,16 +164,7 @@ export default class Game extends Phaser.Scene {
     });
 
     this.input.keyboard.on('keyup-M', (event) => {
-      var machineCanvas = document.getElementById('machine-canvas');
-      var humanCanvas = document.getElementById('phaser');
-
-      if (window.getComputedStyle(machineCanvas).display === 'none') {
-        machineCanvas.style.display = 'block';
-        humanCanvas.style.display = 'none';
-      } else {
-        machineCanvas.style.display = 'none';
-        humanCanvas.style.display = 'block';
-      }
+      console.log(tf.memory());
     }, this);
 
     this.input.keyboard.on('keyup-A', (event) => {
@@ -293,6 +284,7 @@ export default class Game extends Phaser.Scene {
     var start = 0;
 
     for (let i = 0; i < iterations; ++i) {
+      tf.engine().startScope();
       var input = this.shapeImage(replay.children[start + i]);
       var label = JSON.parse(replay.children[start + i].dataset.direction);
       var labelTensor = tf.tensor2d(label)
@@ -308,6 +300,7 @@ export default class Game extends Phaser.Scene {
       });
       console.log(i, result.history.loss[0]);
       if (result.history.acc) { console.log(result.history.acc[0]); }
+      tf.engine().endScope();
     }
   }
 }
