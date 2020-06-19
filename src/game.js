@@ -16,7 +16,7 @@ export default class Game extends Phaser.Scene {
     this.coinsCollected = 0;
     this.outputCount = 4;
     this.learningRate = 0.01;
-    this.trainingCount = 180;
+    this.trainingCount = 300;
     this.captureCount = 150;
     this.batchSize = 1;
     this.numTestExamples = 10;
@@ -212,6 +212,7 @@ export default class Game extends Phaser.Scene {
       if (randomDirection === 1) { this.ship.x += 5; }
       if (randomDirection === 2) { this.ship.y += 5; }
       if (randomDirection === 3) { this.ship.x -= 5; }
+      console.log('rand direction')
     }
   }
 
@@ -222,6 +223,7 @@ export default class Game extends Phaser.Scene {
         //prediction.print();
         prediction.tanh().print();
 
+        tf.engine().startScope();
         var input = this.shapeImage(image);
       
         const result = await this.model.fit(input, prediction, {
@@ -229,8 +231,10 @@ export default class Game extends Phaser.Scene {
           batchSize: this.batchSize,
           yieldEvery: 'epoch'
         });
+        tf.engine().endScope();
 
         return resolve(prediction.tanh().dataSync());
+
       });
     });
   }
