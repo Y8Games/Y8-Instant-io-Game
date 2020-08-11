@@ -7,6 +7,8 @@ This is a boilerplate combining several top open source tools
 
 ![screenshot](https://raw.githubusercontent.com/Y8Games/Y8-Instant-io-Game/master/screenshot2.png)
 
+- If you are new to coding, better to learn JS first https://developer.mozilla.org/en-US/docs/Learn/JavaScript
+
 ## Install
 - Download and install Node.js and optionally MongoDb. https://nodejs.org/en/download/
 - Navigate to the project root where package.json is and run `npm install` in a
