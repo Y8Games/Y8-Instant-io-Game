@@ -7,7 +7,6 @@ const express = require('express');
 const helmet = require('helmet');
 const app = express();
 const server = require('http').createServer(app);
-const io = require('socket.io')(server);
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 let fs = require('fs');
@@ -20,7 +19,6 @@ if (fs.existsSync(pathToModule)) {
 
 var bodyParser = require('body-parser');
 var colors = require('colors');
-require('./world.js')(io)
 
 const compiler = webpack({
   output: {
