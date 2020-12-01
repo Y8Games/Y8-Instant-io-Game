@@ -51,10 +51,6 @@ const compiler = webpack({
     hints: false,
   },
   plugins: [
-    new webpack.DefinePlugin({
-      CANVAS_RENDERER: true,
-      WEBGL_RENDERER: true,
-    }),
     new HtmlWebpackPlugin({
       favicon: 'src/img/favicon.png',
       template: 'src/index.html',
