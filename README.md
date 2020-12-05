@@ -1,18 +1,12 @@
-# Y8 Instant io Game
+# Y8 Instant io Game (Singleplayer template)
 
-This is a boilerplate combining several top open source tools
- to give you an easy starting point to making an io multipler game. It uses
- Node.js with webpack, ES6, and classes. ExpressJS serves webpages and Socket.io
- handles the communication. Phaser 3, provides a 2D engine for graphics.
-
-![screenshot](https://raw.githubusercontent.com/Y8Games/Y8-Instant-io-Game/master/screenshot2.png)
+Single-player game template with optional server and database.
 
 - If you are new to coding, better to learn JS first https://developer.mozilla.org/en-US/docs/Learn/JavaScript
 
 ## Install
 - Download and install Node.js and optionally MongoDb. https://nodejs.org/en/download/
-- Navigate to the project root where package.json is and run `npm install` in a
- terminal, command prompt or preferably Git Bash.
+- Navigate to the project root where package.json is and run `npm install`
 
 ## Development
 - `npm start`
@@ -29,5 +23,4 @@ This is a boilerplate combining several top open source tools
 - Suggest to make an autostart in pm2
 
 Provided by <a href="https://y8.com">Y8 Games</a>. See other
- <a href="https://www.y8.com/tags/io_games">io games</a>. Also see the
- upload page to <a href="https://static.y8.com/upload">submit games</a>.
+upload page to <a href="https://static.y8.com/upload">submit games</a>.
